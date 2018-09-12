@@ -16,6 +16,7 @@
 <div class="pane-group">
   <div class="pane-sm sidebar">
     <nav class="nav-group">
+      <!--
     <h5 class="nav-group-title">Views</h5>
     <span class="nav-group-item" (click)="showTree = false" [ngClass]="!showTree ? 'active' : ''">
       <span class="icon icon-doc-text"></span>
@@ -25,15 +26,17 @@
       <span class="icon icon-flow-tree"></span>
       Analysis View
     </span>
+  -->
     <h5 class="nav-group-title">Recipes for analysis</h5>
-    <a class="nav-group-item typeform-share link" href="https://aveekmukherjee.typeform.com/to/BMmcLC" data-mode="popup" data-submit-close-delay="5" target="_blank">
-      <span class="icon icon-plus-squared"></span>
-      Request new Recipe
-    </a>
-
-    <span class="nav-group-item" *ngFor="let recipe of tableauService.recipes" (click)="handleRecipeClick(recipe.recipe)">
+    <span class="nav-group-item" *ngFor="let recipe of tableauService.recipes" (click)="handleRecipeClick(recipe.recipe)" [ngClass]="{active: selectedRecipe === recipe.recipe}">
        {{recipe.name}}
     </span>
+
+    <a class="nav-group-item typeform-share link" href="https://aveekmukherjee.typeform.com/to/BMmcLC" data-mode="popup" data-submit-close-delay="5" target="_blank">
+      <span class="icon icon-plus-squared"></span>
+      Send Feedback
+    </a>
+
     <app-menu></app-menu>
     </nav>
   </div>
@@ -51,4 +54,15 @@
 
 
 <footer class="toolbar toolbar-footer">
+  <div class="toolbar-actions">
+    <a href="https://github.com/aveekdeveloper/TableauAnalyser" target="_blank">
+      <span class="icon icon-github"></span>
+      Github
+    </a>
+
+    <a class="pull-right" href="https://github.com/aveekdeveloper/TableauAnalyser" target="_blank">
+      <span class="icon icon-github"></span>
+      Github
+    </a>
+  </div>
 </footer>

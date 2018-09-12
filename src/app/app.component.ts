@@ -15,8 +15,10 @@ import * as jsonata from 'jsonata';
 })
 export class AppComponent implements OnInit{
   title = 'TableauAnalyser';
+  selectedRecipe = '';
   showTree : boolean;
   settings = {
+    noDataMessage: 'No data found. Please upload a tableau file and select a recipe from the left sidebar.',
     actions: {
       add: false,
       edit: true,
@@ -41,7 +43,7 @@ export class AppComponent implements OnInit{
     quoteStrings: '"',
     decimalseparator: '.',
     showLabels: true,
-    headers: ["Datasource Caption", "Datasource Name", "Col Caption","Col Name","Formula","Description"]
+    headers: []//["Datasource Caption", "Datasource Name", "Col Caption","Col Name","Formula","Description"]
   };
 
   data: LocalDataSource = new LocalDataSource();
@@ -115,6 +117,7 @@ export class AppComponent implements OnInit{
   }
 
   handleRecipeClick(recipe){
+    this.selectedRecipe = recipe;
     var data = this.tableauService.handleRecipe(recipe);
     this.settings.columns = Object.assign({},this.generateColumnSettings(data));
 
@@ -142,15 +145,22 @@ export class AppComponent implements OnInit{
     const xmlToJson = this.xmlToJson;
     const updateTable = this.updateTable;
     //Compose the twb file name inside the twbx
-    var filename = twbxfile.name.split('.')[0]+".twb";
+    //var filename = twbxfile.name.split('.')[0]+".twb";
     new_zip.loadAsync(twbxfile).then((zip) => {
-       zip.file(filename).async("string").then((text) => {
-         var parser = new DOMParser();
-         var doc = parser.parseFromString(text, "application/xml");
-         var jsonText = JSON.stringify(this.xmlToJson(doc));
-         var final = JSON.parse(jsonText);
-         this.updateTable(final);
-       });
+        for(var f in zip.files){
+          if(f.split('.').pop() === 'twb'){
+            //console.log(f.name);
+            //we found our tableau files
+            zip.file(f).async("string").then((text) => {
+              var parser = new DOMParser();
+              var doc = parser.parseFromString(text, "application/xml");
+              var final = this.xmlToJson(doc);
+              this.updateTable(final);
+            });
+
+            break;
+          }
+        }
     })
   }
 
@@ -173,6 +183,8 @@ export class AppComponent implements OnInit{
 
   exportDataToCsv(){
     const settings = this.csvexportsettings;
+    settings.headers = Object.keys(this.settings.columns);
+    //console.log(settings);
     this.data.getAll().then(function(result){
       new Angular5Csv(result, 'Twb Report',settings);
     }, function(err){
