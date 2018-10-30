@@ -117,7 +117,7 @@ export class AppComponent implements OnInit{
   }
 
   handleRecipeClick(recipe){
-    this.selectedRecipe = recipe;
+    this.selectedRecipe = recipe.recipe;
     var data = this.tableauService.handleRecipe(recipe);
     this.settings.columns = Object.assign({},this.generateColumnSettings(data));
 

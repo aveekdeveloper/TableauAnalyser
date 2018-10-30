@@ -28,7 +28,7 @@
     </span>
   -->
     <h5 class="nav-group-title">Recipes for analysis</h5>
-    <span class="nav-group-item" *ngFor="let recipe of tableauService.recipes" (click)="handleRecipeClick(recipe.recipe)" [ngClass]="{active: selectedRecipe === recipe.recipe}">
+    <span class="nav-group-item" *ngFor="let recipe of tableauService.recipes" (click)="handleRecipeClick(recipe)" [ngClass]="{active: selectedRecipe === recipe.recipe}">
        {{recipe.name}}
     </span>
 

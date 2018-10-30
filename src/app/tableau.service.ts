@@ -62,13 +62,45 @@ export class TableauService {
   }
 
   handleRecipe(recipe){
-    var expression = jsonata(recipe);
+    var expression = jsonata(recipe.recipe);
     //console.log(expression.evaluate(this.tabFile));
-    return expression.evaluate(this.tabFile);
+    var data = expression.evaluate(this.tabFile);
+
+    //Handle additional treatments if needed
+    switch(recipe.name){
+        case 'List all Formulas':
+            //need to replace calculation_xxxxxxxxx fields with the captions
+            data = this.replaceCalculationsinFormula(data);
+    }
+
+    return data;
   }
 
   //Expand a formula by replacing Calculation_*** with the column caption
-  expandFormula(formula){
+  replaceCalculationsinFormula(data){
+      //console.log(data);
+      for(var i=0;i<data.length;i++){
+          var row = data[i];
+          if (row['colid'].includes('Calculation_')){
+            //TODO: improve the logic!! This is bullshit logic working in nxnx5
+            for(var loop =0 ; loop <5 ; loop++){
+              //Stupid hack, to repeat replacement 5 times
+              //as sometimes same variable might be used more than once.
+              //str.replace works for only 1st occurence
+              for(var j=0;j<data.length;j++){
+                //replace All the colcaption in all formula columns
+                var formula = String(data[j]['colformula']);
+                data[j]['colformula'] = formula.replace(row['colid'],row['colcaption']);
+            }
+          }
 
+          }else{
+              continue;
+          }
+
+      }
+      return data;
   }
+
+
 }
