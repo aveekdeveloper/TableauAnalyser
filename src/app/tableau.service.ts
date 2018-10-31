@@ -10,32 +10,38 @@ export class TableauService {
   {
     "name":"List all Formulas",
     "description": "Get column details along with formula and datasource name",
-    "recipe": "$.workbook.datasources.datasource.($dsid:=$._attributes.name; $dscaption:=$._attributes.caption; $.column.{'DS id':$dsid,'DS caption':$dscaption,'colid':$._attributes.name,'colcaption':$._attributes.caption, 'colformula':$.calculation._attributes.formula})"
+    "recipe": "$.workbook.datasources.datasource.($dsid:=$._attributes.name; $dscaption:=$._attributes.caption; $.column.{'DS id':$dsid,'DS caption':$dscaption,'colid':$._attributes.name,'colcaption':$._attributes.caption, 'colformula':$.calculation._attributes.formula})",
+    "columns": ['DS id','DS caption','colid','colcaption','colformula']
   },
   {
     "name":"List all Datasources",
     "description":"Get basic DataSource details",
-    "recipe":"$.workbook.datasources.datasource.{'Datasource id':$._attributes.name, 'Datasource caption':$._attributes.caption}"
+    "recipe":"$.workbook.datasources.datasource.{'DS id':$._attributes.name, 'DS caption':$._attributes.caption}",
+    "columns":['DS id','DS caption']
   },
   {
     "name": "List All datasource Columns",
     "description": "Lists all columns in the datasource",
-    "recipe": "$.workbook.datasources.datasource.($dscaption := $._attributes.caption; $dsid := $._attributes.name; $.connection.'metadata-records'.'metadata-record'.{'dscaption':$dscaption,'dsid':$dsid,'remote-name':$.'remote-name'.'#text','local-name':$.'local-name'.'#text'})"
+    "recipe": "$.workbook.datasources.datasource.($dscaption := $._attributes.caption; $dsid := $._attributes.name; $.connection.'metadata-records'.'metadata-record'.{'DS caption':$dscaption,'DS id':$dsid,'remote-name':$.'remote-name'.'#text','local-name':$.'local-name'.'#text'})",
+    "columns": ['DS caption','DS id','remote-name','local-name']
   },
   {
     "name": "List Only Extracted Columns",
     "description": "Lists all extracted columns",
-    "recipe": "$.workbook.datasources.datasource.($dscaption := $._attributes.caption; $dsid := $._attributes.name; $.extract.connection.'metadata-records'.'metadata-record'.{'dscaption':$dscaption,'dsid':$dsid,'remote-name':$.'remote-name'.'#text','local-name':$.'local-name'.'#text'})"
+    "recipe": "$.workbook.datasources.datasource.($dscaption := $._attributes.caption; $dsid := $._attributes.name; $.extract.connection.'metadata-records'.'metadata-record'.{'DS caption':$dscaption,'DS id':$dsid,'remote-name':$.'remote-name'.'#text','local-name':$.'local-name'.'#text'})",
+    "columns": ['DS caption','DS id','remote-name','local-name']
   },
   {
     "name": "List Sheets and Columns",
     "description": "Lists all sheets and columns used",
-    "recipe": "workbook.worksheets.worksheet.($sheetname := $._attributes.name; $.**.'datasource-dependencies'.($datasource:=$._attributes.datasource; $.column.{'sheet':$sheetname,'ds id':$datasource,'col':$._attributes.caption,'formula':$.calculation._attributes.formula}))"
+    "recipe": "workbook.worksheets.worksheet.($sheetname := $._attributes.name; $.**.'datasource-dependencies'.($datasource:=$._attributes.datasource; $.column.{'sheet':$sheetname,'DS id':$datasource,'col caption':$._attributes.caption,'formula':$.calculation._attributes.formula}))",
+    "columns": ['sheet','DS id','col caption','formula']
   },
   {
     "name": "List Dashboards",
     "description" : "Lists all dashboards in workbook",
-    "recipe": "workbook.dashboards.dashboard.($dashname := $._attributes.name; $.zones.**.name.{'dashboard': $dashname,'sheet':$})"
+    "recipe": "workbook.dashboards.dashboard.($dashname := $._attributes.name; $.zones.**.name.{'dashboard': $dashname,'sheet':$})",
+    "columns": ['dashboard','sheet']
   }
   ];
 
@@ -59,6 +65,11 @@ export class TableauService {
   getColumns(){
     var expression = jsonata("$.workbook.datasources.datasource.($dscaption := $._attributes.caption; $dsid := $._attributes.name; $.connection.'metadata-records'.'metadata-record'.{'dscaption':$dscaption,'dsid':$dsid,'remote-name':$.'remote-name'.'#text','local-name':$.'local-name'.'#text'})");
     return expression.evaluate(this.tabFile);
+  }
+
+  getFormulas(){
+    var expression = jsonata("$.workbook.datasources.datasource.($dsid:=$._attributes.name; $dscaption:=$._attributes.caption; $.column.{'DS id':$dsid,'DS caption':$dscaption,'colid':$._attributes.name,'colcaption':$._attributes.caption, 'colformula':$.calculation._attributes.formula})");
+    return this.replaceCalculationsinFormula(expression.evaluate(this.tabFile));
   }
 
   handleRecipe(recipe){

@@ -104,11 +104,24 @@ export class AppComponent implements OnInit{
     return columnSettings;
   }
 
+  //Add all recipe columns to settings columns
+  generateColumnSettingsFromRecipeColumns(keys){
+      var columnSettings = {};
+      for (var j=0 ;j< keys.length ;j++){
+        columnSettings[keys[j]] = {
+          'title' : keys[j]
+        }
+    }
+
+    return columnSettings;
+  }
+
   updateTable(final) {
+    var recipe =   this.tableauService.recipes[0]
     //save the data in TableauService
     this.tableauService.setTableauFile(final);
-    var data = this.tableauService.getColumns();
-    this.settings.columns = Object.assign({},this.generateColumnSettings(data));
+    var data = this.tableauService.handleRecipe(recipe);
+    this.settings.columns = this.generateColumnSettingsFromRecipeColumns(recipe.columns);
 
     //Hack to force Angular to reload the ng2 smart table,
     //angular doesn't call ngOnchange on partial data change
@@ -117,9 +130,9 @@ export class AppComponent implements OnInit{
   }
 
   handleRecipeClick(recipe){
-    this.selectedRecipe = recipe.recipe;
+    this.selectedRecipe = recipe.name;
     var data = this.tableauService.handleRecipe(recipe);
-    this.settings.columns = Object.assign({},this.generateColumnSettings(data));
+    this.settings.columns = this.generateColumnSettingsFromRecipeColumns(recipe.columns);
 
     //Hack to force Angular to reload the ng2 smart table,
     //angular doesn't call ngOnchange on partial data change
@@ -181,12 +194,34 @@ export class AppComponent implements OnInit{
     };
   }
 
+//TODO: Improve the export logic
   exportDataToCsv(){
     const settings = this.csvexportsettings;
+    const selectedRecipe = this.selectedRecipe;
     settings.headers = Object.keys(this.settings.columns);
-    //console.log(settings);
+
+    settings.headers.sort();
+
     this.data.getAll().then(function(result){
-      new Angular5Csv(result, 'Twb Report',settings);
+        //Check if the result has all columns in settings.headers
+        for(var i=0;i<result.length;i++){
+            //for all result data check, if all header field exists
+            for(var j =0;j<settings.headers.length;j++){
+                //if header field does not exist put NA
+                if(!(settings.headers[j] in result[i])){
+                    result[i][settings.headers[j]] = 'undefined';
+                }
+            }
+
+            //Sort each object by key for the CSV exporter to work properly! I know this is stupid.
+            const ordered = {};
+            Object.keys(result[i]).sort().forEach(function(key) {
+                    ordered[key] = result[i][key];
+                });
+            result[i] = ordered;
+        }
+
+      new Angular5Csv(result,selectedRecipe,settings);
     }, function(err){
       alert("No data to export");
     })
